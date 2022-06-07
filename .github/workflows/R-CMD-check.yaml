@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'slides/*'
+
+name: Render & Deploy Book
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@main
+
+      - uses: r-lib/actions/setup-pandoc@main
+
+      - name: Install dependencies
+        run: |
+          install.packages("rmarkdown")
+          install.packages("bookdown")
+        shell: Rscript {0}
+
+      - name: Render Site
+        run: Rscript -e 'rmarkdown::render_book()'
+      - name: Commit results
+        run: |
+          git add -A
+          git commit -m 'Rebuild book' || echo "No changes to commit"
+          git push origin || echo "No changes to commit"
